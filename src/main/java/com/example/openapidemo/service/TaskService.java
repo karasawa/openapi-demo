@@ -5,6 +5,7 @@ import com.example.openapidemo.repository.TaskRepository;
 import com.example.openapidemo.repository.record.TaskRecord;
 import com.example.openapidemo.service.entity.TaskEntity;
 import com.example.openapidemo.service.entity.TaskEntityNotFoundException;
+import com.example.todoapi.model.TaskForm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,5 +17,11 @@ public class TaskService {
         return taskRepository.select(taskId)
                 .map(record -> new TaskEntity(record.getId(), record.getTitle()))
                 .orElseThrow(() -> new TaskEntityNotFoundException(taskId));
+    }
+
+    public TaskEntity create(String title) {
+        var record = new TaskRecord(null, title);
+        taskRepository.insert(record);
+        return new TaskEntity(record.getId(), record.getTitle());
     }
 }
