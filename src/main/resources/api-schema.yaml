@@ -17,6 +17,46 @@ paths:
         200:
           description: "OK"
   /tasks/:
+    get:
+      tags:
+        - "tasks"
+      summary: "タスク一覧取得"
+      description: "タスクを一覧取得します"
+      operationId: "listTasks"
+      parameters:
+        - name: limit
+          in: query
+          required: true
+          description: "リストに含まれるリソースの最大値"
+          schema:
+            type: integer
+            format: int32
+            minLength: 1
+            maxLength: 100
+            default: 10
+        - name: offset
+          in: query
+          required: true
+          description: "オフセット"
+          schema:
+            type: integer
+            format: int64
+            minLength: 0
+            default: 0
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskListDTO"
+        500:
+          description: "Data Integrity ViolationError"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DataIntegrityViolationError"
+
     post:
       tags:
        - "tasks"
@@ -51,7 +91,7 @@ paths:
       parameters:
         - name: taskId
           in: path
-          description: "タスクID"
+          description: "取得するタスクのID"
           required: true
           schema:
             type: integer
@@ -70,6 +110,64 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ResourceNotFoundError"
+    put:
+      tags:
+        - "tasks"
+      summary: "タスク更新"
+      description: "指定したIDのタスクを更新します"
+      operationId: "updateTask"
+      parameters:
+        - name: taskId
+          in: path
+          description: "更新するタスクのID"
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskForm"
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskDTO"
+        404:
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
+    delete:
+      tags:
+        - "tasks"
+      summary: "タスク削除"
+      description: "指定したIDのタスクを削除します"
+      operationId: "deleteTask"
+      parameters:
+        - name: taskId
+          in: path
+          description: "削除するタスクのID"
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minLength: 1
+      responses:
+        204:
+          description: "No Content"
+        404:
+          description: "Not Found"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResourceNotFoundError"
 components:
   schemas:
     TaskForm:
@@ -82,6 +180,23 @@ components:
           minLength: 1
       required:
         - title
+    PageDTO:
+      description: "ページング情報"
+      type: object
+      properties:
+        limit:
+          type: integer
+          format: int32
+          default: 10
+          description: "リクエストされた limit"
+        offset:
+          type: integer
+          format: int64
+          description: "リクエストされた offset"
+        size:
+          type: integer
+          format: int32
+          description: "取得できた件数"
     TaskDTO:
       type: object
       properties:
@@ -95,6 +210,18 @@ components:
       required:
         - id
         - title
+    TaskListDTO:
+      type: object
+      properties:
+        page:
+          $ref: "#/components/schemas/PageDTO"
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/TaskDTO"
+      required:
+        - page
+        - results
     ResourceNotFoundError:
       description: "指定したリソースが存在しない"
       type: object
@@ -103,6 +230,20 @@ components:
           type: string
           description: "エラーのタイトル"
           default: "Resource Not Found"
+        detail:
+          type: string
+          description: "エラーの詳細"
+      required:
+        - title
+        - detail
+    DataIntegrityViolationError:
+      description: "データの整合性制約違反"
+      type: object
+      properties:
+        title:
+          type: string
+          description: "エラーのタイトル"
+          default: "Data Integrity Violation"
         detail:
           type: string
           description: "エラーの詳細"

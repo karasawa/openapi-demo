@@ -13,10 +13,8 @@ public class TaskRecord {
     private String title;
 
     public Long getId() {
-        return id;
+        return this.id;
     }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return this.title; }
 }
